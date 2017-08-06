@@ -6,7 +6,8 @@
 ; 23 Jul 2017
 ;
 
-cpu 286
+; Volfied runs well on XTs, so the loader must do so.
+cpu 8086
 [map all volfload.map]
 
 %macro res_fptr 0
@@ -32,7 +33,10 @@ section .text
 
 main:		mov	sp, __stktop
 		mov	bx, sp
-		shr	bx, 4				; new size in pars
+		shr	bx, 1				; new size in pars
+		shr	bx, 1
+		shr	bx, 1
+		shr	bx, 1
 		mov	ah, 4Ah				; resize memory block
 		int	21h
 
@@ -80,7 +84,11 @@ int_handler:	cmp	ah, 3Dh
 		; with this call. We intercept it to take note of what program
 		; will be actually loaded as each one has different offsets for
 		; patch. DS:DX -> ASCIIZ filename
-		pusha
+		push	ax
+		push	dx
+		push	bx
+		push	si
+		push	di
 		mov	si, dx
 		lodsb
 		xor	bx, bx
@@ -103,10 +111,15 @@ int_handler:	cmp	ah, 3Dh
 		jne	.legacy
 		dec	byte [cs:intcnt]
 		jnz	.legacy
-		pusha
+		push	ax
+		push	dx
+		push	bx
+		push	si
+		push	di
 
 		mov	bx, [cs:prg_idx]
-		shl	bx, 2
+		shl	bx, 1
+		shl	bx, 1
 		lea	bx, [prginfos + bx]
 		mov	di, [cs:bx + pi_cp_proc]
 		mov	byte [di], RETN_OPCODE	; skip prot. question
@@ -115,7 +128,11 @@ int_handler:	cmp	ah, 3Dh
 
 		call	uninstall	; restore original vector of int 21h
 
-.popa_legacy:	popa
+.popa_legacy:	pop	di
+		pop	si
+		pop	bx
+		pop	dx
+		pop	ax
 .legacy:	jmp	far [cs:int21]
 
 ;------------------------------------------------------------------------------
