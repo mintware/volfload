@@ -89,7 +89,6 @@ int_handler:	pushf
 		push	dx
 		push	bx
 		push	si
-		push	di
 		mov	si, dx
 		lodsb
 		xor	bx, bx
@@ -116,21 +115,19 @@ int_handler:	pushf
 		push	dx
 		push	bx
 		push	si
-		push	di
 
 		mov	bx, [cs:prg_idx]
 		shl	bx, 1
 		shl	bx, 1
 		lea	bx, [prginfos + bx]
-		mov	di, [cs:bx + pi_cp_proc]
-		mov	byte [di], RETN_OPCODE	; skip prot. question
-		mov	di, [cs:bx + pi_cp_passed]
-		mov	byte [di], 1		; imitate correct answer
+		mov	si, [cs:bx + pi_cp_proc]
+		mov	byte [si], RETN_OPCODE	; skip prot. question
+		mov	si, [cs:bx + pi_cp_passed]
+		mov	byte [si], 1		; imitate correct answer
 
 		call	uninstall	; restore original vector of int 21h
 
-.popa_legacy:	pop	di
-		pop	si
+.popa_legacy:	pop	si
 		pop	bx
 		pop	dx
 		pop	ax
