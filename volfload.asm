@@ -77,7 +77,8 @@ main:		mov	sp, __stktop
 
 ;------------------------------------------------------------------------------
 
-int_handler:	cmp	ah, 3Dh
+int_handler:	pushf
+		cmp	ah, 3Dh
 		jne	.malloc
 
 		; volfied.exe reads one of cga.prg, ega.prg, tga.prg or vga.prg
@@ -133,7 +134,8 @@ int_handler:	cmp	ah, 3Dh
 		pop	bx
 		pop	dx
 		pop	ax
-.legacy:	jmp	far [cs:int21]
+.legacy:	popf
+		jmp	far [cs:int21]
 
 ;------------------------------------------------------------------------------
 
