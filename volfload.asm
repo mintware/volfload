@@ -79,7 +79,6 @@ main:		mov	sp, __stktop
 
 int_handler:	pushf
 		push	ax
-		push	bx
 		push	si
 
 		cmp	ah, 3Dh
@@ -91,20 +90,7 @@ int_handler:	pushf
 		; patch. DS:DX -> ASCIIZ filename
 		mov	si, dx
 		lodsb
-		xor	bx, bx
-		cmp	al, 'C'
-		je	.set_prg_idx
-
-		inc	bx
-		cmp	al, 'E'
-		je	.set_prg_idx
-
-		inc	bx
-		cmp	al, 'T'
-		je	.set_prg_idx
-
-		inc	bx
-.set_prg_idx:	mov	word [cs:prg_idx], bx
+		mov	[cs:prgletter], al
 		jmp	short .legacy
 
 .malloc:	cmp	ah, 48h
@@ -112,8 +98,23 @@ int_handler:	pushf
 		dec	byte [cs:intcnt]
 		jnz	.legacy
 
-		mov	bx, [cs:prg_idx]
-		shl	bx, 1
+		push	bx
+
+		xor	bx, bx
+		mov	al, [cs:prgletter]
+		cmp	al, 'C'
+		je	.patch
+
+		inc	bx
+		cmp	al, 'E'
+		je	.patch
+
+		inc	bx
+		cmp	al, 'T'
+		je	.patch
+
+		inc	bx
+.patch:		shl	bx, 1
 		shl	bx, 1
 		lea	bx, [prginfos + bx]
 		mov	si, [cs:bx + pi_cp_proc]
@@ -125,8 +126,9 @@ int_handler:	pushf
 		call	uninstall	; restore original vector of int 21h
 		pop	dx
 
-.legacy:	pop	si
 		pop	bx
+
+.legacy:	pop	si
 		pop	ax
 		popf
 		jmp	far [cs:int21]
@@ -172,7 +174,7 @@ exe		db	"volfied.exe",0,"$"
 section .bss follows=.text nobits
 
 __bss		equ	$
-prg_idx		resw	1
+prgletter	resb	1
 parmblk		resw	1				; environment seg
 cmdtail		res_fptr				; cmd tail
 		resd	1				; first FCB address
