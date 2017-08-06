@@ -78,6 +78,10 @@ main:		mov	sp, __stktop
 ;------------------------------------------------------------------------------
 
 int_handler:	pushf
+		push	ax
+		push	bx
+		push	si
+
 		cmp	ah, 3Dh
 		jne	.malloc
 
@@ -85,10 +89,6 @@ int_handler:	pushf
 		; with this call. We intercept it to take note of what program
 		; will be actually loaded as each one has different offsets for
 		; patch. DS:DX -> ASCIIZ filename
-		push	ax
-		push	dx
-		push	bx
-		push	si
 		mov	si, dx
 		lodsb
 		xor	bx, bx
@@ -105,16 +105,12 @@ int_handler:	pushf
 
 		inc	bx
 .set_prg_idx:	mov	word [cs:prg_idx], bx
-		jmp	short .popa_legacy
+		jmp	short .legacy
 
 .malloc:	cmp	ah, 48h
 		jne	.legacy
 		dec	byte [cs:intcnt]
 		jnz	.legacy
-		push	ax
-		push	dx
-		push	bx
-		push	si
 
 		mov	bx, [cs:prg_idx]
 		shl	bx, 1
@@ -125,13 +121,14 @@ int_handler:	pushf
 		mov	si, [cs:bx + pi_cp_passed]
 		mov	byte [si], 1		; imitate correct answer
 
+		push	dx
 		call	uninstall	; restore original vector of int 21h
-
-.popa_legacy:	pop	si
-		pop	bx
 		pop	dx
+
+.legacy:	pop	si
+		pop	bx
 		pop	ax
-.legacy:	popf
+		popf
 		jmp	far [cs:int21]
 
 ;------------------------------------------------------------------------------
