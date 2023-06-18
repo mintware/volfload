@@ -16,7 +16,7 @@ cpu 8086
 %endmacro
 
 PSP_SZ		equ	100h
-STACK_SZ	equ	32
+STACK_SZ	equ	64
 RETN_OPCODE	equ	0C3h
 
 struc prginfo
