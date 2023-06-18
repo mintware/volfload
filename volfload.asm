@@ -174,13 +174,12 @@ exe		db	"volfied.exe",0,"$"
 section .bss follows=.text nobits
 
 __bss		equ	$
+int21		res_fptr
 prgletter	resb	1
 parmblk		resw	1				; environment seg
 cmdtail		res_fptr				; cmd tail
 		resd	1				; first FCB address
 		resd	1				; second FCB address
-
-int21		res_fptr
 __bss_size	equ	$-__bss
 
 
