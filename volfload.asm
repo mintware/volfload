@@ -33,10 +33,8 @@ byemsg		db	"Visit http://sinil.in/mintware/volfied/$"
 
 main:		mov	sp, __stktop
 		mov	bx, sp
-		shr	bx, 1				; new size in pars
-		shr	bx, 1
-		shr	bx, 1
-		shr	bx, 1
+		mov	cl, 4
+		shr	bx, cl				; new size in pars
 		mov	ah, 4Ah				; resize memory block
 		int	21h
 
